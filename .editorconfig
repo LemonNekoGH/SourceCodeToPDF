@@ -1,0 +1,7 @@
+[{*.java, *.kt}]
+indent_size = 4
+indent_style = space
+
+[{*.js, *.json}]
+indent_size = 2
+indent_style = space
