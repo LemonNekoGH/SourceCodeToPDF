@@ -22,13 +22,17 @@ import java.io.File
 
 object MainWindowViewModel {
     val windowTitle = mutableStateOf("源代码生成PDF工具")
-    val sourceCodePath = mutableStateOf("")
 
-    val textFieldError = mutableStateOf(false)
-    val textFieldErrorText = mutableStateOf("")
+    val sourceCodePath = mutableStateOf("")
+    val sourceCodePathError = mutableStateOf(false)
+    val sourceCodePathErrorText = mutableStateOf("")
 
     val ignoreFileName = mutableStateOf("")
     val ignoreFileNameError = mutableStateOf(false)
+
+    val outputFilePath = mutableStateOf("")
+    val outputFilePathError = mutableStateOf(false)
+    val outputFilePathErrorText = mutableStateOf("")
 
     lateinit var cnFont: PDFont
     lateinit var enFont: PDFont
@@ -54,8 +58,8 @@ fun Home() {
     ) {
         OutlinedTextField(
             label = {
-                val text = if (MainWindowViewModel.textFieldError.value) {
-                    "请输入要生成PDF的路径（${MainWindowViewModel.textFieldErrorText.value}）"
+                val text = if (MainWindowViewModel.sourceCodePathError.value) {
+                    "请输入要生成PDF的路径（${MainWindowViewModel.sourceCodePathErrorText.value}）"
                 } else {
                     "请输入要生成PDF的路径"
                 }
@@ -64,11 +68,11 @@ fun Home() {
             value = MainWindowViewModel.sourceCodePath.value,
             onValueChange = {
                 MainWindowViewModel.sourceCodePath.value = it
-                validateInput()
+                validateSourceCodePathInput()
             },
             modifier = Modifier
                 .fillMaxWidth(),
-            isErrorValue = MainWindowViewModel.textFieldError.value
+            isErrorValue = MainWindowViewModel.sourceCodePathError.value
         )
         OutlinedTextField(
             label = {
@@ -90,6 +94,20 @@ fun Home() {
                 .fillMaxWidth(),
             isErrorValue = MainWindowViewModel.ignoreFileNameError.value
         )
+        OutlinedTextField(
+            label = {
+                val text = if (MainWindowViewModel.outputFilePathError.value) {
+                    "输出文件路径（${MainWindowViewModel.outputFilePathErrorText.value}）"
+                } else {
+                    "输出文件路径"
+                }
+                Text(text = text)
+            },
+            value = MainWindowViewModel.outputFilePath.value,
+            onValueChange = ::validateOutputInput,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
         Button(
             onClick = ::onConvertButtonClick,
             content = {
@@ -105,23 +123,29 @@ fun Home() {
 }
 
 private fun onConvertButtonClick() {
-    if (!validateInput() || MainWindowViewModel.textFieldError.value) {
-        println("用户输入的内容不可用，忽略此次点击")
-        return
+    MainWindowViewModel.apply {
+        if (!validateSourceCodePathInput() || sourceCodePathError.value) {
+            println("源代码路径不可用")
+            return
+        }
+        if (outputFilePathError.value) {
+            println("输出路径不可用")
+        }
+
+        doConvert(sourceCodePath.value)
     }
-    doConvert(MainWindowViewModel.sourceCodePath.value)
 }
 
 /**
  * 检查输入的路径是否正确和可用
  */
-private fun validateInput(): Boolean {
+private fun validateSourceCodePathInput(): Boolean {
     val path = MainWindowViewModel.sourceCodePath.value
     if (path.isBlank() || path.isEmpty()) {
         println("路径为空，不能继续")
         MainWindowViewModel.apply {
-            textFieldError.value = true
-            textFieldErrorText.value = "路径不能为空"
+            sourceCodePathError.value = true
+            sourceCodePathErrorText.value = "路径不能为空"
         }
         return false
     }
@@ -130,22 +154,50 @@ private fun validateInput(): Boolean {
     if (!dir.exists()) {
         println("文件夹不存在，不能继续")
         MainWindowViewModel.apply {
-            textFieldError.value = true
-            textFieldErrorText.value = "文件夹不存在"
+            sourceCodePathError.value = true
+            sourceCodePathErrorText.value = "文件夹不存在"
         }
         return false
     }
     if (!dir.isDirectory) {
         println("输入的路径不是文件夹，不能继续")
         MainWindowViewModel.apply {
-            textFieldError.value = true
-            textFieldErrorText.value = "路径不是文件夹"
+            sourceCodePathError.value = true
+            sourceCodePathErrorText.value = "路径不是文件夹"
         }
         return false
     }
-    MainWindowViewModel.textFieldError.value = false
-    MainWindowViewModel.textFieldErrorText.value = ""
+    MainWindowViewModel.sourceCodePathError.value = false
+    MainWindowViewModel.sourceCodePathErrorText.value = ""
     return true
+}
+
+/**
+ * 用来验证输出文件夹是否可用
+ */
+private fun validateOutputInput(input: String) {
+    MainWindowViewModel.apply {
+        outputFilePath.value = input
+
+        if (input.isBlank() || input.isEmpty()) {
+            outputFilePathError.value = true
+            outputFilePathErrorText.value = "不能为空"
+            return
+        }
+
+        if (!input.endsWith(".pdf")) {
+            outputFilePathError.value = true
+            outputFilePathErrorText.value = "结尾需要是.pdf"
+            return
+        }
+
+        val file = File(input)
+        if (file.exists()) {
+            outputFilePathError.value = true
+            outputFilePathErrorText.value = "文件已存在"
+            return
+        }
+    }
 }
 
 /**
@@ -156,8 +208,6 @@ private fun doConvert(
     path: String
 ) {
     val dir = File(path)
-    val outputDir = File(dir.parent, "test.pdf")
-
     val document = PDDocument()
 
     MainWindowViewModel.cnFont = PDType0Font.load(
@@ -171,7 +221,7 @@ private fun doConvert(
 
     readFileAndWriteToDocument(document, dir)
 
-    document.save(outputDir)
+    document.save(MainWindowViewModel.outputFilePath.value)
     document.close()
 }
 
@@ -260,6 +310,12 @@ private fun readFileAndWriteToDocument(
     }
 }
 
+/**
+ * 把每次的输出步骤封装成一个方法
+ * @param text 要输出的字符串
+ * @param x    字符串在PDF页面上的x轴偏移
+ * @param y    字符串在PDF页面上的y轴偏移
+ */
 fun PDPageContentStream.writeText(
     text: String,
     x: Float,
@@ -272,7 +328,11 @@ fun PDPageContentStream.writeText(
         showText(text)
     } catch (e: IllegalArgumentException) {
         setFont(MainWindowViewModel.cnFont, fontSize)
-        showText(text)
+        try {
+            showText(text)
+        } catch (e: Exception) {
+            println("因为字体问题，本行没有被输出: $text")
+        }
     }
     endText()
 }
