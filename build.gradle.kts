@@ -3,12 +3,22 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.20"
-    id("org.jetbrains.compose") version "0.2.0-build132"
+    kotlin("jvm") version "1.4.32"
+    id("org.jetbrains.compose") version "0.4.0-build180"
+}
+
+fun getVersionCode(): Int {
+    return Runtime.getRuntime()
+        .exec("git rev-list --count HEAD", null, file("."))
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
+        .toInt()
 }
 
 group = "moe.lemonneko"
-version = "1.0"
+version = "1.0.${getVersionCode()}"
 
 repositories {
     jcenter()
@@ -38,10 +48,10 @@ tasks.withType<KotlinCompile> {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "moe.lemonneko.sctp.Main"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "source-code-to-pdf"
+            packageName = "源码PDF生成工具"
         }
     }
 }

@@ -1,4 +1,6 @@
-# SourceCodeToPDF 软著登记必备工具
+# SourceCodeToPDF 源码PDF生成器
+
+也许是软著登记必备工具
 
 ### WHAT 这是什么东西？
 
@@ -27,6 +29,16 @@
 - [ ] 每页行数设置
 - [ ] 输出相对源码文件夹的文件名
 - [ ] 字体大小设置
+
+### BUILDING 构建
+
+请首先安装JDK14及以上版本，否则无法进行构建
+
+构建命令：
+
+```
+./gradlew packageDmg
+```
 
 ### CONTRIBUTION 帮助改进
 

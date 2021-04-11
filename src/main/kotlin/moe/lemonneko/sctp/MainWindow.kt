@@ -72,7 +72,7 @@ fun Home() {
                 },
                 modifier = Modifier
                     .fillMaxWidth(),
-                isErrorValue = isError
+                isError = isError
             )
         }
 
@@ -88,7 +88,7 @@ fun Home() {
                 },
                 modifier = Modifier
                     .fillMaxWidth(),
-                isErrorValue = isError
+                isError = isError
             )
         }
 
@@ -104,7 +104,7 @@ fun Home() {
                 },
                 modifier = Modifier
                     .fillMaxWidth(),
-                isErrorValue = isError
+                isError = isError
             )
         }
 
