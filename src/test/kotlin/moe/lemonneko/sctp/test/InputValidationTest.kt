@@ -27,7 +27,7 @@ class InputValidationTest {
         expect(true) {
             validateOutputPathInput(".").first
         }
-        expect(false) {
+        expect(true) {
             validateOutputPathInput("path/not/exists").first
         }
     }
