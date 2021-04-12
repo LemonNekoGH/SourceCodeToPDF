@@ -51,7 +51,7 @@ compose.desktop {
         mainClass = "moe.lemonneko.sctp.Main"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "源码PDF生成工具"
+            packageName = "SourceCodeToPDF"
         }
     }
 }

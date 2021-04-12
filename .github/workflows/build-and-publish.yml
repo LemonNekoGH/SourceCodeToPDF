@@ -1,0 +1,37 @@
+name: Build And Publish Release
+on:
+  push:
+    branches:
+      - main
+      - workflow-test
+jobs:
+  build:
+    name: packageMsi
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '15'
+      - name: test
+        run: './gradlew.bat test'
+      - name: packageMsi
+        run: './gradlew.bat packageMsi'
+      - name: create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.FOR_ACTIONS }}
+        with:
+          tag_name: v1.0.${{ github.ref }}
+          release_name: SourceCodeToPDF-1.0.${{ github.ref }}
+      - name: upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.FOR_ACTIONS }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/compose/binaries/main/msi/SourceCodeToPDF-1.0.${{ github.ref }}.msi
+          asset_name: SourceCodeToPDF-1.0.${{ github.ref }}.msi
+          asset_content_type: application/octet-stream
