@@ -55,3 +55,17 @@ compose.desktop {
         }
     }
 }
+
+// update github action script
+fun updateGitHubAction() {
+    val scriptFilePath = ".github/workflows/build-and-publish.yml"
+    val scriptFile = file(scriptFilePath)
+    val templateFile = file("$scriptFilePath.template")
+    val templateStr = templateFile.readText()
+    if (!scriptFile.exists()) {
+        scriptFile.createNewFile()
+    }
+    scriptFile.writeText(templateStr.replace("%v", version.toString()))
+}
+
+updateGitHubAction()

@@ -24,14 +24,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.FOR_ACTIONS }}
         with:
-          tag_name: v1.0.${{ github.ref }}
-          release_name: SourceCodeToPDF-1.0.${{ github.ref }}
+          tag_name: v1.0.8
+          release_name: SourceCodeToPDF-1.0.8
       - name: upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.FOR_ACTIONS }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/compose/binaries/main/msi/SourceCodeToPDF-1.0.${{ github.ref }}.msi
-          asset_name: SourceCodeToPDF-1.0.${{ github.ref }}.msi
+          asset_path: ./build/compose/binaries/main/msi/SourceCodeToPDF-1.0.8.msi
+          asset_name: SourceCodeToPDF-1.0.8.msi
           asset_content_type: application/octet-stream
